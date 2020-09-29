@@ -33,15 +33,14 @@ if [ -z "$Host" ]; then
   exit 0
 fi
 
-declare -A Server
 for K in ${!AttributeList[@]}; do
   Key=${AttributeList[$K]}
   Field="${InputServerName}_${Key}"
-  Server[$Key]=${!Field}
+  declare "${Key}"=${!Field}
 done
 
 dest_existed() {
-  if ssh -i ${Server[sshKey]} ${Server[user]}@${Server[host]} "[ -d ${Server[dest]} ]"; then
+  if ssh -i ${sshKey} ${user}@${host} "[ -d ${dest} ]"; then
     echo 'true'
   else
     echo 'false'
@@ -49,11 +48,11 @@ dest_existed() {
 }
 create_dest() {
   if [[ $(dest_existed) == 'false' ]]; then
-    ssh -i ${Server[sshKey]} ${Server[user]}@${Server[host]} "mkdir -p ${Server[dest]}"
+    ssh -i ${sshKey} ${user}@${host} "mkdir -p ${dest}"
   fi
 }
 git_pull() {
-  git pull origin ${Server[branch]}
+  git pull origin ${branch}
 }
 deploy() {
   Cmd="rsync"
@@ -61,16 +60,16 @@ deploy() {
     Cmd="rsync.exe"
   fi
 
-  ${Cmd} -avHPe ssh ${Server[src]} -e "ssh -i ${Server[sshKey]}" ${Server[user]}@${Server[host]}:${Server[dest]} --exclude-from ${Server[excludeFile]}
+  ${Cmd} -avHPe ssh ${src} -e "ssh -i ${sshKey}" ${user}@${host}:${dest} --exclude-from ${excludeFile}
 }
 restart_server() {
-  ssh -i ${Server[sshKey]} ${Server[user]}@${Server[host]} "[ -s '${Server[userHome]}/.nvm/nvm.sh' ] && \. '${Server[userHome]}/.nvm/nvm.sh' && pm2 reload all"
+  ssh -i ${sshKey} ${user}@${host} "[ -s '${userHome}/.nvm/nvm.sh' ] && \. '${userHome}/.nvm/nvm.sh' && pm2 reload all"
 }
 
 printf "\n"
 printf "${Blue}+ Prepare to deploy to ${Red}${InputServerName}${Blue}...${NoColor}\n"
 create_dest
-printf "${Blue}+ Pulling code from ${Red}${Server[branch]}${Blue}...${NoColor}\n"
+printf "${Blue}+ Pulling code from ${Red}${branch}${Blue}...${NoColor}\n"
 git_pull
 printf "\n${Blue}+ Start deploying code to ${Red}${InputServerName}${Blue}...${NoColor}\n"
 deploy
