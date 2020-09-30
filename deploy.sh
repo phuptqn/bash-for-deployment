@@ -7,16 +7,21 @@ NoColor='\033[0m'
 ServersDir="./servers"
 ServerList=()
 
-for Entry in "$ServersDir"/*; do
-  while IFS='/' read -ra EntrySplit; do
-    ServerList+=("${EntrySplit[-1]}")
-  done <<< "$Entry"
-done
-
-if [[ "${#ServerList[@]}" == 0 ]]; then
+if [ ! -d "$ServersDir" ]; then
   printf "${Red}- No servers found!${NoColor}\n"
   exit 0
 fi
+
+if [ ! -f "$ServersDir"/* ]; then
+  printf "${Red}- No servers found!${NoColor}\n"
+  exit 0
+fi
+
+for Entry in "$ServersDir"/*; do
+  while IFS=/ read -ra EntrySplit; do
+    ServerList+=("${EntrySplit[-1]}")
+  done <<< "$Entry"
+done
 
 if [[ "${#ServerList[@]}" == 1 ]]; then
   InputServerName=${ServerList[0]}
@@ -35,7 +40,8 @@ if [ -z "$InputServerName" ]; then
   exit 0
 fi
 
-while IFS='=' read -r key value; do
+while IFS== read -r key value; do
+  value=${value::-1} # remove last character
   declare "${key}"=$value
 done < "$ServersDir/$InputServerName"
 
