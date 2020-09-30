@@ -4,43 +4,43 @@ Blue='\033[0;34m'
 Red='\033[0;31m'
 NoColor='\033[0m'
 
+ServersDir="./servers"
 ServerList=()
-AttributeList=(host user userHome branch src dest excludeFile sshKey)
 
-ServerList+=(devel)
-devel_host="remote_ip"
-devel_user="remote_user"
-devel_userHome="remote_user_home_dir"
-devel_branch="git_branch_name"
-devel_src="local_source_code_dir"
-devel_dest="remote_source_code_dir"
-devel_excludeFile=".rsync-ignore"
-devel_sshKey="ssh_priv_key_path"
-
-printf "${Blue}+ Choose a server to deploy?${NoColor}\n"
-for K in ${!ServerList[@]}; do
-  printf "$(($K + 1)) - ${Red}${ServerList[$K]}${NoColor}\n"
+for Entry in "$ServersDir"/*; do
+  while IFS='/' read -ra EntrySplit; do
+    ServerList+=("${EntrySplit[-1]}")
+  done <<< "$Entry"
 done
 
-read InputServerIndex
+if [[ "${#ServerList[@]}" == 0 ]]; then
+  printf "${Red}- No servers found!${NoColor}\n"
+  exit 0
+fi
 
-InputServerName=${ServerList[$(($InputServerIndex - 1))]}
-Host="${InputServerName}_host"
-Host=${!Host}
+if [[ "${#ServerList[@]}" == 1 ]]; then
+  InputServerName=${ServerList[0]}
+else
+  printf "${Blue}+ Choose a server to deploy?${NoColor}\n"
+  for K in ${!ServerList[@]}; do
+    printf "$(($K + 1)) - ${Red}${ServerList[$K]}${NoColor}\n"
+  done
 
-if [ -z "$Host" ]; then
+  read InputServerIndex
+  InputServerName=${ServerList[$(($InputServerIndex - 1))]}
+fi
+
+if [ -z "$InputServerName" ]; then
   printf "${Red}- Invalid selection!${NoColor}\n"
   exit 0
 fi
 
-for K in ${!AttributeList[@]}; do
-  Key=${AttributeList[$K]}
-  Field="${InputServerName}_${Key}"
-  declare "${Key}"=${!Field}
-done
+while IFS='=' read -r key value; do
+  declare "${key}"=$value
+done < "$ServersDir/$InputServerName"
 
 dest_existed() {
-  if ssh -i ${sshKey} ${user}@${host} "[ -d ${dest} ]"; then
+  if ssh -i ${SSH_KEY} ${USER}@${HOST} "[ -d ${DEST} ]"; then
     echo 'true'
   else
     echo 'false'
@@ -48,11 +48,11 @@ dest_existed() {
 }
 create_dest() {
   if [[ $(dest_existed) == 'false' ]]; then
-    ssh -i ${sshKey} ${user}@${host} "mkdir -p ${dest}"
+    ssh -i ${SSH_KEY} ${USER}@${HOST} "mkdir -p ${DEST}"
   fi
 }
 git_pull() {
-  git pull origin ${branch}
+  git pull origin ${GIT_BRANCH}
 }
 deploy() {
   Cmd="rsync"
@@ -60,16 +60,16 @@ deploy() {
     Cmd="rsync.exe"
   fi
 
-  ${Cmd} -avHPe ssh ${src} -e "ssh -i ${sshKey}" ${user}@${host}:${dest} --exclude-from ${excludeFile}
+  ${Cmd} -avHPe ssh ${SRC} -e "ssh -i ${SSH_KEY}" ${USER}@${HOST}:${DEST} --exclude-from ${EXCLUDE_FILE}
 }
 restart_server() {
-  ssh -i ${sshKey} ${user}@${host} "[ -s '${userHome}/.nvm/nvm.sh' ] && \. '${userHome}/.nvm/nvm.sh' && pm2 reload all"
+  ssh -i ${SSH_KEY} ${USER}@${HOST} "[ -s '${USER_HOME}/.nvm/nvm.sh' ] && \. '${USER_HOME}/.nvm/nvm.sh' && pm2 reload all"
 }
 
 printf "\n"
 printf "${Blue}+ Prepare to deploy to ${Red}${InputServerName}${Blue}...${NoColor}\n"
 create_dest
-printf "${Blue}+ Pulling code from ${Red}${branch}${Blue}...${NoColor}\n"
+printf "${Blue}+ Pulling code from ${Red}${GIT_BRANCH}${Blue}...${NoColor}\n"
 git_pull
 printf "\n${Blue}+ Start deploying code to ${Red}${InputServerName}${Blue}...${NoColor}\n"
 deploy
