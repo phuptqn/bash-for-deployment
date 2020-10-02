@@ -46,7 +46,7 @@ while IFS== read -r key value; do
 done < "$ServersDir/$InputServerName"
 
 dest_existed() {
-  if ssh -i ${SSH_KEY} ${USER}@${HOST} "[ -d ${DEST} ]"; then
+  if ssh -i ${SSH_KEY} -p ${PORT} ${USER}@${HOST} "[ -d ${DEST} ]"; then
     echo 'true'
   else
     echo 'false'
@@ -54,7 +54,7 @@ dest_existed() {
 }
 create_dest() {
   if [[ $(dest_existed) == 'false' ]]; then
-    ssh -i ${SSH_KEY} ${USER}@${HOST} "mkdir -p ${DEST}"
+    ssh -i ${SSH_KEY} -p ${PORT} ${USER}@${HOST} "mkdir -p ${DEST}"
   fi
 }
 git_pull() {
@@ -66,10 +66,10 @@ deploy() {
     Cmd="rsync.exe"
   fi
 
-  ${Cmd} -avHPe ssh ${SRC} -e "ssh -i ${SSH_KEY}" ${USER}@${HOST}:${DEST} --exclude-from ${EXCLUDE_FILE}
+  ${Cmd} -avHPe ssh ${SRC} -e "ssh -i ${SSH_KEY} -p ${PORT}" ${USER}@${HOST}:${DEST} --exclude-from ${EXCLUDE_FILE}
 }
 restart_server() {
-  ssh -i ${SSH_KEY} ${USER}@${HOST} "[ -s '${USER_HOME}/.nvm/nvm.sh' ] && \. '${USER_HOME}/.nvm/nvm.sh' && pm2 reload all"
+  ssh -i ${SSH_KEY} -p ${PORT} ${USER}@${HOST} "[ -s '${USER_HOME}/.nvm/nvm.sh' ] && \. '${USER_HOME}/.nvm/nvm.sh' && pm2 reload all"
 }
 
 printf "\n"
