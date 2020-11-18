@@ -12,7 +12,8 @@ if [ ! -d "$ServersDir" ]; then
   exit 0
 fi
 
-if [ ! -f "$ServersDir"/* ]; then
+serverFiles=("$ServersDir"/*)
+if [ ! -f "$serverFiles" ]; then
   printf "${Red}- No servers found!${NoColor}\n"
   exit 0
 fi
