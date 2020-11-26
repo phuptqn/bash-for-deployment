@@ -42,7 +42,6 @@ if [ -z "$InputServerName" ]; then
 fi
 
 while IFS== read -r key value; do
-  value=${value::-1} # remove last character
   declare "${key}"=$value
 done < "$ServersDir/$InputServerName"
 
