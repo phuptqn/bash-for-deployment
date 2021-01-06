@@ -80,7 +80,7 @@ git_pull
 printf "\n${Blue}+ Start deploying code to ${Red}${InputServerName}${Blue}...${NoColor}\n"
 deploy
 printf "\n${Blue}+ Restarting server ${Red}${InputServerName}${Blue}...${NoColor}\n"
-restart_server
+${RESTART_SERVER_FUNC}
 printf "\n${Blue}= Completed deploying to ${Red}${InputServerName}${Blue}!${NoColor}\n"
 
 printf "${Blue}= Exiting...${NoColor}\n\n"
