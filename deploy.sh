@@ -58,6 +58,8 @@ create_dest() {
   fi
 }
 git_pull() {
+  git stash save "Switched to ${GIT_BRANCH} to deploy at $(date)"
+  git checkout ${GIT_BRANCH}
   git pull origin ${GIT_BRANCH}
 }
 deploy() {
