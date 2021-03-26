@@ -71,7 +71,7 @@ deploy() {
   ${Cmd} -avHPe ssh ${SRC} -e "ssh -i ${SSH_KEY} -p ${PORT}" ${USER}@${HOST}:${DEST} --exclude-from ${EXCLUDE_FILE}
 }
 restart_server_dev() {
-  ssh -i ${SSH_KEY} -p ${PORT} ${USER}@${HOST} "[ -s '${USER_HOME}/.nvm/nvm.sh' ] && \. '${USER_HOME}/.nvm/nvm.sh' && pm2 reload all"
+  ssh -i ${SSH_KEY} -p ${PORT} ${USER}@${HOST} "[ -s '${USER_HOME}/.nvm/nvm.sh' ] && \. '${USER_HOME}/.nvm/nvm.sh' && pm2 reload api-abc"
 }
 
 printf "\n"
