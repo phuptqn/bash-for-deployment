@@ -70,7 +70,7 @@ deploy() {
 
   ${Cmd} -avHPe ssh ${SRC} -e "ssh -i ${SSH_KEY} -p ${PORT}" ${USER}@${HOST}:${DEST} --exclude-from ${EXCLUDE_FILE}
 }
-restart_server() {
+restart_server_dev() {
   ssh -i ${SSH_KEY} -p ${PORT} ${USER}@${HOST} "[ -s '${USER_HOME}/.nvm/nvm.sh' ] && \. '${USER_HOME}/.nvm/nvm.sh' && pm2 reload all"
 }
 
@@ -79,6 +79,8 @@ printf "${Blue}+ Prepare to deploy to ${Red}${InputServerName}${Blue}...${NoColo
 create_dest
 printf "\n${Blue}+ Pulling code from ${Red}${GIT_BRANCH}${Blue}...${NoColor}\n"
 git_pull
+# printf "\n${Blue}+ Building source code for ${Red}${InputServerName}${Blue}...${NoColor}\n"
+# gulp build
 printf "\n${Blue}+ Start deploying code to ${Red}${InputServerName}${Blue}...${NoColor}\n"
 deploy
 printf "\n${Blue}+ Restarting server ${Red}${InputServerName}${Blue}...${NoColor}\n"
