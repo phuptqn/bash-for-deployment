@@ -65,7 +65,7 @@ git_pull() {
 deploy() {
   Cmd="rsync"
   if ! command -v ${Cmd} &> /dev/null; then
-    Cmd="rsync.exe"
+    Cmd="./rsync.exe"
   fi
 
   ${Cmd} -avHPe ssh ${SRC} -e "ssh -i ${SSH_KEY} -p ${PORT}" ${USER}@${HOST}:${DEST} --exclude-from ${EXCLUDE_FILE}
