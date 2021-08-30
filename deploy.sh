@@ -41,8 +41,9 @@ if [ -z "$InputServerName" ]; then
   exit 0
 fi
 
-while IFS== read -r key value; do
-  declare "${key}"=$value
+while IFS=$'\r\n' read -r Line; do
+  IFS='=' read -ra LineParts <<< "$Line"
+  declare "${LineParts[0]}"="${LineParts[1]}"
 done < "$ServersDir/$InputServerName"
 
 dest_existed() {
