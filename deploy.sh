@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 Blue='\033[0;34m'
 Red='\033[0;31m'
@@ -53,16 +54,19 @@ dest_existed() {
     echo 'false'
   fi
 }
+
 create_dest() {
   if [[ $(dest_existed) == 'false' ]]; then
     ssh -i ${SSH_KEY} -p ${PORT} ${USER}@${HOST} "mkdir -p ${DEST}"
   fi
 }
+
 git_pull() {
   git stash save "Switched to ${GIT_BRANCH} to deploy at $(date)"
   git checkout ${GIT_BRANCH}
   git pull origin ${GIT_BRANCH}
 }
+
 deploy() {
   Cmd="rsync"
   if ! command -v ${Cmd} &> /dev/null; then
@@ -71,6 +75,7 @@ deploy() {
 
   ${Cmd} -avHPe ssh ${SRC} -e "ssh -i ${SSH_KEY} -p ${PORT}" ${USER}@${HOST}:${DEST} --exclude-from ${EXCLUDE_FILE}
 }
+
 restart_server_dev() {
   ssh -i ${SSH_KEY} -p ${PORT} ${USER}@${HOST} "[ -s '${USER_HOME}/.nvm/nvm.sh' ] && \. '${USER_HOME}/.nvm/nvm.sh' && pm2 reload api-abc"
 }
@@ -78,14 +83,19 @@ restart_server_dev() {
 printf "\n"
 printf "${Blue}+ Prepare to deploy to ${Red}${InputServerName}${Blue}...${NoColor}\n"
 create_dest
+
 printf "\n${Blue}+ Pulling code from ${Red}${GIT_BRANCH}${Blue}...${NoColor}\n"
 git_pull
+
 # printf "\n${Blue}+ Building source code for ${Red}${InputServerName}${Blue}...${NoColor}\n"
 # gulp build
+
 printf "\n${Blue}+ Start deploying code to ${Red}${InputServerName}${Blue}...${NoColor}\n"
 deploy
-printf "\n${Blue}+ Restarting server ${Red}${InputServerName}${Blue}...${NoColor}\n"
-${RESTART_SERVER_FUNC}
+
+# printf "\n${Blue}+ Restarting server ${Red}${InputServerName}${Blue}...${NoColor}\n"
+# ${RESTART_SERVER_FUNC}
+
 printf "\n${Blue}= Completed deploying to ${Red}${InputServerName}${Blue}!${NoColor}\n"
 
 printf "${Blue}= Exiting...${NoColor}\n\n"
