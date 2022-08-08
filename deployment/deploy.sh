@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+InputEnv=$1
+
 Blue='\033[0;34m'
 Red='\033[0;31m'
 NoColor='\033[0m'
@@ -28,13 +30,19 @@ done
 if [[ "${#ServerList[@]}" == 1 ]]; then
   InputServerName=${ServerList[0]}
 else
-  printf "${Blue}+ Choose a server to deploy?${NoColor}\n"
-  for K in ${!ServerList[@]}; do
-    printf "$(($K + 1)) - ${Red}${ServerList[$K]}${NoColor}\n"
-  done
 
-  read InputServerIndex
-  InputServerName=${ServerList[$(($InputServerIndex - 1))]}
+  if [ -z "$InputEnv" ]; then
+    printf "${Blue}+ Choose a server to deploy?${NoColor}\n"
+    for K in ${!ServerList[@]}; do
+      printf "$(($K + 1)) - ${Red}${ServerList[$K]}${NoColor}\n"
+    done
+
+    read InputServerIndex
+    InputServerName=${ServerList[$(($InputServerIndex - 1))]}
+  else
+    InputServerName="${InputEnv}.env"
+  fi
+
 fi
 
 if [ -z "$InputServerName" ]; then
@@ -47,8 +55,19 @@ while IFS=$'\r\n' read -r Line; do
   declare "${LineParts[0]}"="${LineParts[1]}"
 done < "$ServersDir/$InputServerName"
 
+init_CI_CD() {
+  if [ -z "$CI" ]; then
+    # NOT in ci/cd
+    SSH_KEY=" -i ${SSH_KEY}"
+    printf "${Blue}= Deployment state: ${Red}Manual${Blue}${NoColor}\n\n"
+  else
+    SSH_KEY=""
+    printf "${Blue}= Deployment state: ${Red}CI/CD${Blue}${NoColor}\n\n"
+  fi
+}
+
 dest_existed() {
-  if ssh -i ${SSH_KEY} -p ${PORT} ${USER}@${HOST} "[ -d ${DEST} ]"; then
+  if ssh${SSH_KEY} -p ${PORT} ${USER}@${HOST} "[ -d ${DEST} ]"; then
     echo 'true'
   else
     echo 'false'
@@ -57,7 +76,7 @@ dest_existed() {
 
 create_dest() {
   if [[ $(dest_existed) == 'false' ]]; then
-    ssh -i ${SSH_KEY} -p ${PORT} ${USER}@${HOST} "mkdir -p ${DEST}"
+    ssh${SSH_KEY} -p ${PORT} ${USER}@${HOST} "mkdir -p ${DEST}"
   fi
 }
 
@@ -69,8 +88,11 @@ git_pull() {
 
 update_cache_version() {
   CurrentDate=`date +"%Y%m%d-%H%M%S"`
+  CurrentTz=`date +"%z"`
+  CurrentTz="${CurrentTz:1}"
+  CurrentTz="${CurrentTz::-2}"
 
-  echo "$CurrentDate" > ../cache-version.txt
+  echo "${CurrentDate}${CurrentTz}" > ../cache-version.txt
 }
 
 deploy() {
@@ -81,14 +103,16 @@ deploy() {
   
   update_cache_version
 
-  ${Cmd} -avHPe ssh ${SRC} -e "ssh -i ${SSH_KEY} -p ${PORT}" ${USER}@${HOST}:${DEST} --exclude-from ${EXCLUDE_FILE}
+  ${Cmd} -avHPe ssh ${SRC} -e "ssh${SSH_KEY} -p ${PORT}" ${USER}@${HOST}:${DEST} --exclude-from ${EXCLUDE_FILE}
 }
 
 restart_server_dev() {
-  ssh -i ${SSH_KEY} -p ${PORT} ${USER}@${HOST} "[ -s '${USER_HOME}/.nvm/nvm.sh' ] && \. '${USER_HOME}/.nvm/nvm.sh' && pm2 reload api-abc"
+  ssh${SSH_KEY} -p ${PORT} ${USER}@${HOST} "[ -s '${USER_HOME}/.nvm/nvm.sh' ] && \. '${USER_HOME}/.nvm/nvm.sh' && pm2 reload api-abc"
 }
 
 printf "\n"
+
+init_CI_CD
 
 printf "${Blue}+ Prepare to deploy to ${Red}${InputServerName}${Blue}...${NoColor}\n"
 create_dest
