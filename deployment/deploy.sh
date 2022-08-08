@@ -9,6 +9,8 @@ NoColor='\033[0m'
 
 ServersDir="./servers"
 ServerList=()
+IsCiCd=true
+CiCdStateText="CI/CD"
 
 if [ ! -d "$ServersDir" ]; then
   printf "${Red}- No servers found!${NoColor}\n"
@@ -58,11 +60,14 @@ done < "$ServersDir/$InputServerName"
 init_CI_CD() {
   if [ -z "$CI" ]; then
     # NOT in ci/cd
+    IsCiCd=false
+    CiCdStateText="MANUAL"
+
+    # use local SSH
     SSH_KEY=" -i ${SSH_KEY}"
-    printf "${Blue}= Deployment state: ${Red}Manual${Blue}${NoColor}\n\n"
   else
+    # use ssh key in CI/CD
     SSH_KEY=""
-    printf "${Blue}= Deployment state: ${Red}CI/CD${Blue}${NoColor}\n\n"
   fi
 }
 
@@ -110,15 +115,24 @@ restart_server_staging() {
   ssh${SSH_KEY} -p ${PORT} ${USER}@${HOST} "[ -s '${USER_HOME}/.nvm/nvm.sh' ] && \. '${USER_HOME}/.nvm/nvm.sh' && pm2 reload api-abc"
 }
 
-printf "\n"
+######################################################################################################
+##################################### Execute the functions ##########################################
+######################################################################################################
 
 init_CI_CD
+
+printf "\n"
+
+printf "${Blue}= Deployment state: ${Red}${CiCdStateText}${Blue}${NoColor}\n\n"
 
 printf "${Blue}+ Prepare to deploy to ${Red}${InputServerName}${Blue}...${NoColor}\n"
 create_dest
 
-printf "\n${Blue}+ Pulling code from ${Red}${GIT_BRANCH}${Blue}...${NoColor}\n"
-git_pull
+if [[ "$IsCiCd" = false ]]; then
+  printf "\n${Blue}+ Pulling code from ${Red}${GIT_BRANCH}${Blue}...${NoColor}\n"
+  # only pull the code on local
+  git_pull
+fi
 
 # printf "\n${Blue}+ Building source code for ${Red}${InputServerName}${Blue}...${NoColor}\n"
 # gulp build
