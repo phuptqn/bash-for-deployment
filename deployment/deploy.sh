@@ -106,7 +106,7 @@ deploy() {
   ${Cmd} -avHPe ssh ${SRC} -e "ssh${SSH_KEY} -p ${PORT}" ${USER}@${HOST}:${DEST} --exclude-from ${EXCLUDE_FILE}
 }
 
-restart_server_dev() {
+restart_server_staging() {
   ssh${SSH_KEY} -p ${PORT} ${USER}@${HOST} "[ -s '${USER_HOME}/.nvm/nvm.sh' ] && \. '${USER_HOME}/.nvm/nvm.sh' && pm2 reload api-abc"
 }
 
