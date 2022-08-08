@@ -1,0 +1,16 @@
+# This is an example Starter pipeline configuration
+# Use a skeleton to build, test and deploy using manual and parallel steps
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+
+image: atlassian/default-image:latest
+
+pipelines:
+  branches:
+    staging:
+      - step:
+          name: Staging deployment
+          deployment: staging
+          script:
+            - apt-get install rsync -y
+            - cd ./wp-content/themes/phuptqn && npm run deploy:stag

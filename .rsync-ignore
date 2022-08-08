@@ -1,2 +1,17 @@
+.DS_Store
 node_modules
+deployment
+.gitkeep
+.rsync-ignore
+package.json
+package-lock.json
 .gitignore
+npm-debug.log
+gulpfile.js
+scss
+vendor
+composer.json
+composer.lock
+assets/scss
+assets/css/*.scss
+assets/css/*.map

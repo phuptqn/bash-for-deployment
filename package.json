@@ -1,8 +1,21 @@
 {
-  "name": "project-name",
-  "version": "0.0.0",
+  "name": "phuptqn",
+  "description": "phuptqn",
   "private": true,
+  "version": "1.0.0",
+  "homepage": "https://www.phanthanhphu.com",
+  "authors": [
+    "PhuPT <phuptqn@gmail.com>"
+  ],
   "scripts": {
-    "deploy": "bash -e ./deploy.sh"
+    "start": "gulp",
+    "dev": "gulp",
+    "build": "gulp build",
+    "deploy": "cd ./deployment && bash -e ./deploy.sh",
+    "deploy:stag": "cd ./deployment && bash -e ./deploy.sh 'staging'",
+    "deploy:prod": "cd ./deployment && bash -e ./deploy.sh 'production'",
+    "ssh:stag": "cd deployment && ssh -i ./key_stag www-data@xxx",
+    "ssh:prod": "cd deployment && ssh -i ./key_prod www-data@xxx",
+    "ssh:prod:root": "ssh -i key root@xxx"
   }
 }
