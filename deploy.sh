@@ -67,11 +67,19 @@ git_pull() {
   git pull origin ${GIT_BRANCH}
 }
 
+update_cache_version() {
+  CurrentDate=`date +"%Y%m%d-%H%M%S"`
+
+  echo "$CurrentDate" > ../cache-version.txt
+}
+
 deploy() {
   Cmd="rsync"
   if ! command -v ${Cmd} &> /dev/null; then
     Cmd="./rsync.exe"
   fi
+  
+  update_cache_version
 
   ${Cmd} -avHPe ssh ${SRC} -e "ssh -i ${SSH_KEY} -p ${PORT}" ${USER}@${HOST}:${DEST} --exclude-from ${EXCLUDE_FILE}
 }
@@ -81,6 +89,7 @@ restart_server_dev() {
 }
 
 printf "\n"
+
 printf "${Blue}+ Prepare to deploy to ${Red}${InputServerName}${Blue}...${NoColor}\n"
 create_dest
 
