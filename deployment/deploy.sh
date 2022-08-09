@@ -135,7 +135,7 @@ if [[ "$IsCiCd" = false ]]; then
 fi
 
 # printf "\n${Blue}+ Building source code for ${Red}${InputServerName}${Blue}...${NoColor}\n"
-# gulp build
+# npm run build
 
 printf "\n${Blue}+ Start deploying code to ${Red}${InputServerName}${Blue}...${NoColor}\n"
 deploy
