@@ -3,7 +3,8 @@
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
 
-image: atlassian/default-image:latest
+image: phumadie/mt_dev:rsync
+# image: phumadie/mt_dev:nodejs
 
 pipelines:
   branches:
@@ -12,5 +13,20 @@ pipelines:
           name: Staging deployment
           deployment: staging
           script:
-            - apt-get install rsync -y
-            - cd ./wp-content/themes/phuptqn && npm run deploy:stag
+            - cd ./wp-content/themes/theme_name/deployment && bash -e ./deploy.sh 'staging'
+    deployment/production:
+      - step:
+          name: Production deployment
+          deployment: production
+          caches:
+            - nodemodules
+          script:
+            - . ~/.nvm/nvm.sh
+            - nvm use 10.12.0
+            - cd ./wp-content/themes/theme_name
+            - npm install
+            - npm run deploy:prod
+
+definitions:
+  caches:
+    nodemodules: ./wp-content/themes/theme_name/node_modules
