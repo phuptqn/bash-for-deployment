@@ -3,6 +3,8 @@ set -e
 
 InputEnv=$1
 
+#master here
+
 Blue='\033[0;34m'
 Red='\033[0;31m'
 NoColor='\033[0m'
