@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-#master conflict here
-
 InputEnv=$1
 
 Blue='\033[0;34m'
