@@ -14,6 +14,8 @@ ServerList=()
 IsCiCd=true
 CiCdStateText="CI/CD"
 
+#master here
+
 if [ ! -d "$ServersDir" ]; then
   printf "${Red}- No servers found!${NoColor}\n"
   exit 0
