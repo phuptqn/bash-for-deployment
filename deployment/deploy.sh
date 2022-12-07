@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-InputEnv=$1
+#master conflict here
 
-#master here
+InputEnv=$1
 
 Blue='\033[0;34m'
 Red='\033[0;31m'
@@ -13,8 +13,6 @@ ServersDir="./servers"
 ServerList=()
 IsCiCd=true
 CiCdStateText="CI/CD"
-
-#master test
 
 if [ ! -d "$ServersDir" ]; then
   printf "${Red}- No servers found!${NoColor}\n"
